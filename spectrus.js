@@ -74,6 +74,7 @@ var Spectrus = (function(){
 	 * @optional @param arr: Vec to copy, or an array of numbers
 	 */
 	function Vec(type, size, vec) {
+		this._mean = null;
 		// @TODO should we coerce to type & size for vec?
 		if ( typeof vec === 'object' ) {
 			var name = vec.constructor.name;
