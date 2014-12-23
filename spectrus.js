@@ -74,7 +74,6 @@ var Spectrus = (function(){
 	 * @optional @param arr: Vec to copy, or an array of numbers
 	 */
 	function Vec(type, size, vec) {
-		this._mean = null;
 		// @TODO should we coerce to type & size for vec?
 		if ( typeof vec === 'object' ) {
 			var name = vec.constructor.name;
@@ -304,22 +303,17 @@ var Spectrus = (function(){
 	
 	/** Vector mean */
 	Vec.prototype.mean = function() {
-		
-		if ( this._mean ) return this._mean;
-		
 		var a = 0;
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			a += this.at(i);
-		this._mean = a / this.size();
-		
-		return this._mean;
+		return a / this.size();
 	};
 	
 	/** Vector standard deviation */
 	Vec.prototype.std = function() {
-		var a = 0;
+		var a = 0, mean = this.mean();
 		for ( var i = 0, len = this.size(); i < len; i++ ) {
-			var x = this.at(i) - this.mean();
+			var x = this.at(i) - mean;
 			a += x * x;
 		}
 		return Math.sqrt(a / this.size());
@@ -330,9 +324,9 @@ var Spectrus = (function(){
 		// return null on error
 		if ( this.size() != b.size() ) return null;
 		
-		var a = 0;
+		var a = 0, a_mean = this.mean(), b_mean = b.mean();
 		for ( var i = 0, len = this.size(); i < len; i++ )
-			a += (this.at(i) - this.mean()) * (b.at(i) - b.mean());
+			a += (this.at(i) - a_mean * (b.at(i) - b_mean;
 		return a / this.size();
 	};
 	
