@@ -194,6 +194,12 @@ var Spectrus = (function(){
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			this._buffer[i] /= x;
 	};
+	/** Normalize a tiny bit faster at a tiny loss of precision */
+	Vec.prototype.normalize_faster = function() {
+		var x = 1.0 / this.norm();
+		for ( var i = 0, len = this.size(); i < len; i++ )
+			this._buffer[i] *= x;	
+	};
 	
 	/** Cross Product */
 	Vec.prototype.cross = function(b) {
