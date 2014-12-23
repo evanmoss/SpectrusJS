@@ -134,11 +134,12 @@ var Spectrus = (function(){
 	
 	/** p-norm */
 	function vec_p_norm(p) {
+		var p_inv = 1.0 / p;
 		return function() {
 			var a = 0;
 			for ( var i = 0, len = this.size(); i < len; i++ )
 				a += Math.pow(Math.abs(this.at(i)), p);
-			return Math.pow(a, 1 / p);
+			return Math.pow(a, p_inv);
 		}
 	}
 	
