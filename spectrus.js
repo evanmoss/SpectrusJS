@@ -1,6 +1,6 @@
 /**
  * @Author: Evan Moss
- * @Email: evanmoss@umich.edu
+ * @Website: evanmoss.info
  * @Copyright: Copyright 2014-2015. All Rights Reserved. Something something fair use license.  Don't copy and redistribute without attribution.
  * @Git: https://github.com/evanmoss/spectrusjs
  */
