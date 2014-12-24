@@ -326,7 +326,7 @@ var Spectrus = (function(){
 		
 		var a = 0, a_mean = this.mean(), b_mean = b.mean();
 		for ( var i = 0, len = this.size(); i < len; i++ )
-			a += (this.at(i) - a_mean * (b.at(i) - b_mean;
+			a += (this.at(i) - a_mean) * (b.at(i) - b_mean);
 		return a / this.size();
 	};
 	
