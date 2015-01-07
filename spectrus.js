@@ -426,10 +426,28 @@ var Spectrus = (function(){
 		return choose_map[n][k] = factorial(n) / (factorial(k) * factorial(n - k));
 	}
 	
+	/**
+	 * Convert degrees to rads
+	 */
+	function degToRad(x) {
+		return Math.PI * (x / 180);
+	}
+	
+	/**
+	 * Convert rads to degrees
+	 */
+	function radToDeg(x) {
+		return 180 * (x / Math.PI);
+	}
+	
 	return {
 		// Public Number Operators
-		factorial: function(n) { return factorial(n);},
-		choose: function(n,k) { return choose(n,k);},
+		factorial: function(n) { return factorial(n); },
+		choose: function(n,k) { return choose(n,k); },
+		
+		// Unit Conversion Operators
+		degToRad: function(x) { return degToRad(x); },
+		radToDeg: function(x) { return radToDeg(x); },
 		
 		// Public Vector Constructors
 		Vec: function(type, size, vec) { return new Vec(type, size, vec); },
