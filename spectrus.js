@@ -398,7 +398,39 @@ var Spectrus = (function(){
 			this.set(i, Math.random() * d + min);
 	};
 	
+	/** 
+	 * Some Math Functions
+	 */
+	
+	/**
+	 * Factorial
+	 * returns n! for n > -1, or 1
+	 */
+	var factorial_map = [];
+	function factorial(n) {
+		if ( n < 2 ) return 1;
+		if ( factorial_map[n] ) return factorial_map[n];
+		return factorial_map[n] = factorial(n - 1) * n;
+	}
+	
+	/**
+	 * Choose
+	 * returns n choose k for 0 <= k <= n
+	 */
+	var choose_map = [[]];
+	function choose(n, k) {
+		if ( k > n ) return 0;
+		if ( n < 0 ) return 0;
+		if ( typeof choose_map[n] === "undefined" ) choose_map[n] = [];
+		if ( choose_map[n][k] ) return choose_map[n][k];
+		return choose_map[n][k] = factorial(n) / (factorial(k) * factorial(n - k));
+	}
+	
 	return {
+		// Public Number Operators
+		factorial: function(n) { return factorial(n);},
+		choose: function(n,k) { return choose(n,k);},
+		
 		// Public Vector Constructors
 		Vec: function(type, size, vec) { return new Vec(type, size, vec); },
 		Vec3d: function() { return new Vec('Float64Array', 3); },
