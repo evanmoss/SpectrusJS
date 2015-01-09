@@ -14,6 +14,49 @@ var Spectrus = (function(){
 		a = b;
 		b = tmp;
 	}
+
+	// returns -1 or 1 for sign of number or 0 for 0
+	function sign(x) {
+		return (x > 0) | -(x < 0);
+	}	
+	
+	/**
+	 * round function
+	 * from http://phpjs.org/functions/round/
+	 */
+	function round(value, precision, mode) {
+		var m, f, isHalf, sgn; // helper variables
+		// making sure precision is integer
+		precision |= 0;
+		m = Math.pow(10, precision);
+		value *= m;
+		// sign of the number
+		sgn = sign(value);
+		isHalf = value % 1 === 0.5 * sgn;
+		f = Math.floor(value);
+
+		if (isHalf) {
+			switch (mode) {
+		    	case 'ROUND_HALF_DOWN':
+		    		// rounds .5 toward zero
+		    		value = f + (sgn < 0);
+		    		break;
+		    	case 'ROUND_HALF_EVEN':
+		    		// rouds .5 towards the next even integer
+		    		value = f + (f % 2 * sgn);
+		    		break;
+		    	case 'ROUND_HALF_ODD':
+		     	 // rounds .5 towards the next odd integer
+		    		value = f + !(f % 2);
+		    		break;
+		    	default:
+		    		// rounds .5 away from zero
+		    		value = f + (sgn > 0);
+			}
+		}
+		
+		return (isHalf ? value : Math.round(value)) / m;
+	}
 	
 	/**
 	 * Spectrus Finite State Machine Properties
@@ -114,6 +157,13 @@ var Spectrus = (function(){
 	
 	Vec.prototype.getCopy = function() {
 		return new Vec(null,null,this);
+	};
+	
+	/**
+	 * debug function prints buffer object to console
+	 */
+	Vec.prototype.print = function() {
+		console.log(this._buffer);
 	};
 	
 	// returns a copy of _buffer
@@ -325,6 +375,71 @@ var Spectrus = (function(){
 		return Math.sqrt(a / this.size());
 	};
 	
+	/** UNFINISHED ###################################################################################################################
+	 * Vector Median using binmedian #################################################################################################
+	 * http://www.stat.cmu.edu/~ryantibs/papers/median.pdf ###########################################################################
+	 * B is number of bins to use, which interacts with the data's distribution to affect speed ######################################
+	 * @TODO add quickselect option smaller vectors (<10e5?) for large stds, or single use... (see paper for binmedian's weaknesses) #
+	 * @TODO Finish, fix, etc... #####################################################################################################
+	 */
+	Vec.prototype.median = function(B) {
+		
+		var n = this.size();
+		
+		// corner cases
+		if ( n == 0 ) return 0;
+		else if ( n == 1 ) return this._buffer[0];
+		else if ( n == 2 ) return (this._buffer[0] + this._buffer[1]) / 2;
+		
+		var mean = this.mean(), std = this.std();
+		
+		// paper uses B = n/10e4, but let's use 10e2 for now
+		if ( !B ) B = Math.ceil(n/10e2);
+		if ( n < 20 || B > n )
+			B = n;
+		
+		// form bins
+		var bins = [];
+		for ( var i = 0; i < B; i++ )
+			bins[i] = [];
+		
+		var count = 0, a = mean - std, b = mean + std, range = b - a, binSize = range / B;
+		
+		// insert into bins
+		for ( var i = 0; i < n; i++ ) {
+			var x = this._buffer[i];
+			
+			if ( x < a ) {
+				count++;
+				continue;
+			}
+			else if ( x > b ) continue;
+			
+			var y = Math.floor((x-a) / binSize);
+			//console.log("putting into bin " + y + " of " + B);
+			bins[y].push(x);
+		}
+		
+		var lim, curBin = -1;
+		
+		// if odd # elements
+		//if ( this.size() & 1 ) {
+			lim = (n + 1) / 2;
+
+			//console.log(bins[curBin]);
+			
+			while ( count < lim ) {
+				count += bins[++curBin].length;
+			}
+			
+			var V = new Vec(this._type, bins[curBin].length, bins[curBin]);
+			return V.median();
+		//}
+		//else {
+		//	lim = n / 2;
+		//}
+	};
+	
 	/** Covariance */
 	Vec.prototype.cov = function(b) {
 		// return null on error
@@ -429,6 +544,16 @@ var Spectrus = (function(){
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			if ( this.at(i) != a.at(i) ) return false;
 		return true;
+	};
+	
+	/**
+	 * Cleans up vector
+	 * i.e., rounds all entries to d digits
+	 * and uses mode m (see round())
+	 */
+	Vec.prototype.cleanup = function(d, mode) {
+		for ( var i = 0; i < this.size(); i++ )
+			this._buffer[i] = round(this._buffer[i], d, mode);
 	};
 	
 	/** 
@@ -564,27 +689,27 @@ var Spectrus = (function(){
 	
 	/** Access (Column-major) **/
 	Mat.prototype.at = function(i, j) {
-		return this._buffer.at(j * this._cols + i);
+		return this._buffer.at(i * this._cols + j);
 	};
 	/** Setter (Column-major) **/
 	Mat.prototype.set = function(i, j, a) {
-		this._buffer.set(j * this._cols + i, a);
+		this._buffer.set(i * this._cols + j, a);
 	};
 	
 	/** Access (Row-major) **/
 	Mat.prototype.at_r = function(i, j) {
-		return this._buffer.at(i * this._cols + j);
+		return this._buffer.at(j * this._cols + i);
 	};
 	/** Setter (Column-major) **/
 	Mat.prototype.set_r = function(i, j, a) {
-		this._buffer.set(i * this._cols + j, a);
+		this._buffer.set(j * this._cols + i, a);
 	};
 	
 	/**
 	 * Transpose
 	 */
 	Mat.prototype.transpose = function() {
-		var M = new Mat(this._type, this._rows, this._cols);
+		var M = new Mat(this._type, this._cols, this._rows);
 		for ( var i = 0; i < this._rows; i++ )
 			for ( var j = 0; j < this._cols; j++ )
 				M.set(i, j, this.at(j, i));
@@ -625,12 +750,7 @@ var Spectrus = (function(){
 	 * Scale by a scalar
 	 */
 	Mat.prototype.scale = function(a) {
-		var M = this.getCopy();
-		
-		for ( var i = 0, len = M._buffer.size(); i < len; i++ )
-			M._buffer[i] * a;
-		
-		return M;
+		return new Mat(this._type, this._rows, this._cols, this._buffer.scale(a));
 	};
 	
 	/**
@@ -734,11 +854,53 @@ var Spectrus = (function(){
 	};
 	
 	/**
-	 * returns the trace of a matrix
+	 * Turns a matrix into an identity matrix if it's square
+	 */
+	Mat.prototype.toIdentity = function() {
+		if ( !this.isSquare() ) return;
+		this.reset();
+		for ( var i = 0; i < this._rows; i++ )
+			this.set(i,i,1);
+	};
+	
+	/**
+	 * returns a new dxd identity matrix
+	 */
+	Mat.prototype.identity = function() {
+		if ( !this.isSquare() ) return;
+		var M = new Mat(this._type, this._rows, this.rows);
+		for ( var i = 0; i < M._rows; i++ )
+			M.set(i,i,1);
+		return M;
+	};
+	
+	/**
+	 * returns the ith column
+	 */
+	Mat.prototype.getCol = function(i) {
+		var C = new Mat(this._type, this._rows, 1);
+		for ( var r = 0; r < this._rows; r++ )
+			C.set(0, r, this.at(i, r));
+		return C;
+	};
+	
+	/**
+	 * returns the ith row
+	 */
+	Mat.prototype.getRow = function(i) {
+		var R = new Mat(this._type, 1, this._cols);
+		for ( var c = 0; c < this._cols; c++ )
+			R.set(0, c, this.at(c, i));
+		return R;
+	};
+	
+	/**
+	 * returns the trace of a square matrix
+	 * or 0 ( for faster compile)
 	 */
 	Mat.prototype.trace = function() {
 		// check that matrix is square
-		if ( !this.isSquare() ) return;
+		if ( !this.isSquare() ) return 0;
 		
 		var trace = 0;
 		for ( var i = 0; i < this._rows; i++ )
@@ -750,10 +912,11 @@ var Spectrus = (function(){
 	/**
 	 * returns the determinant of a matrix
 	 * adapted from http://professorjava.weebly.com/matrix-determinant.html
+	 * or 0
 	 */
 	Mat.prototype.det = function() {
 		// check taht matrix is square
-		if ( !this.isSquare() ) return;
+		if ( !this.isSquare() ) return 0;
 		
 		var det = 0, s;
 		
@@ -776,6 +939,188 @@ var Spectrus = (function(){
 		}
 		
 		return det;
+	};
+	
+	/**
+	 * returns the row-major (i,j) minor
+	 * or 0
+	 */
+	Mat.prototype.minor_r = function(i, j) {
+		if ( !this.isSquare() ) return 0;
+		
+		// get a new d-1xd-1 matrix
+		var M = new Mat(this._type, this._rows - 1, this._cols - 1);
+		// fill in
+		var curRow = 0, curCol;
+		for ( var row = 0; row < this._rows; row++ ) {
+			if ( row == i ) continue;
+			curCol = 0;
+			for ( var col = 0; col < this._cols; col++ ) {
+				if ( col == j ) continue;
+				M.set(curCol, curRow, this.at(col, row));
+				curCol++;
+			}
+			curRow++;
+		}
+		
+		return M.det();
+	};
+	
+	/**
+	 * returns the column-major (i,j) minor
+	 * or 0
+	 */
+	Mat.prototype.minor = function(i, j) {
+		return this.minor_r(j,i);
+	};
+	
+	/**
+	 * returns the column-major (i,j) cofactor
+	 * or 0
+	 */
+	Mat.prototype.cofactor = function(i, j) {
+		var minor = this.minor(i, j);
+		return ( (i + j) & 1 ) ? -minor : minor;
+	};
+	
+	/**
+	 * returns the row-major (i, j) cofactor
+	 * or 0
+	 */
+	Mat.prototype.cofactor_r = function(i, j) {
+		return this.cofactor(j, i);
+	};
+	
+	/**
+	 * Returns the cofactor matrix
+	 */
+	Mat.prototype.cofactorMatrix = function() {
+		if ( !this.isSquare() ) return;
+		
+		var M = new Mat(this._type, this._rows, this._cols);
+		for ( var i = 0; i < this._cols; i++ )
+			for ( var j = 0; j < this._rows; j++ )
+				M.set(i, j, this.cofactor(i, j));
+		
+		return M;
+	};
+	
+	/**
+	 * Returns the adjugate matrix
+	 */
+	Mat.prototype.adjugate = function() {
+		return this.cofactorMatrix().transpose();
+	};
+	
+	/**
+	 * Returns whether or not the matrix is singular
+	 */
+	Mat.prototype.isSingular = function() {
+		if ( this.det() == 0 ) return true;
+		return false;
+	};
+	
+	/**
+	 * Returns the inverse matrix
+	 */
+	Mat.prototype.inverse = function() {
+		// instead of calculating the determinent twice...
+		var det = this.det();
+		if ( det == 0 ) return;
+
+		return this.adjugate().scale(1.0 / det);
+	};
+	
+	/**
+	 * Cleans up matrix
+	 * i.e., rounds all entries to d digits
+	 * and uses mode m (see round())
+	 */
+	Mat.prototype.cleanup = function(d, mode) {
+		this._buffer.cleanup(d, mode);
+	};
+	
+	/**
+	 * Returns whether or not a diagonal element is 0
+	 * use on r diagonal form qr decomposition to determine
+	 * if matrix is ful rank
+	 * p is a precision parameter for round()
+	 */
+	Mat.prototype.diagHasZero = function(p) {
+		if ( !p ) p = 6;
+		for ( var i = 0; i < this._rows; i++ )
+			if ( round(this.at(i,i), p) == 0 ) return true;
+		return false;
+	};
+	
+	/**
+	 * Computes the QR decomposition
+	 * returns {Q,R}
+	 * @TODO fix!
+	 * trying to adapt from http://www.iaa.ncku.edu.tw/~dychiang/lab/program/mohr3d/source/Jama%5CQRDecomposition.html
+	 */
+	Mat.prototype.QR = function() {
+		
+		// @TODO implement diagnonal matrix subclass to replace r
+		var 
+		qr = this.getCopy(), 
+		rdiag = new Mat(this._type, this._cols, this._cols),
+		q = new Mat(this._type, this._cols, this._cols),
+		r = new Mat(this._type, this._cols, this._cols);
+		
+		pushVectorNormState('euclidean');
+		for ( var k = 0; k < qr._cols; k++ ) {
+			// Compute 2-norm of the kth column
+			var nrm = qr.getCol(k)._buffer.norm();
+			
+			if ( nrm != 0 ) {
+				// form the kth Householder vector
+				if ( qr.at(k, k) < 0 )
+					nrm = -nrm;
+				for ( var i = k; i < qr._rows; i++ )
+					qr.set(k, i, qr.at(k, i) / nrm);
+				qr.set(k, k, qr.at(k, k) + 1.0);
+				
+				// apply transformation to remaining columns
+				for ( var j = k + 1; j < qr._cols; j++ ) {
+					var s = 0.0;
+					for ( var i = k; i < qr._rows; i++ )
+						s += qr.at(k,i) * qr.at(j,i);
+					s = -s / qr.at(k, k);
+					for ( var i = k; i < qr._rows; i++ )
+						qr.set(j, i, s * qr.at(k, i));
+				}
+			}
+			rdiag.set(k, k, -nrm);
+		}
+		popVectorNormState();
+		
+		// get r
+		for ( var i = 0; i < this._cols; i++ ) {
+			for ( var j = 0; j < this._cols; j++ ) {
+				if ( i < j )
+					r.set(j,i,qr.at(j,i));
+				else if ( i == j )
+					r.set(j,i,rdiag.at(i,i));
+			}
+		}
+		
+		// get q
+		for ( var k = this._cols - 1; k >= 0; k-- ) {
+			q.set(k,k,1);
+			for ( var j = k; j < this._cols; j++ ) {
+				if ( round(qr.at(k,k), 6) != 0 ) {
+					var s = 0.0;
+					for ( var i = k; i < this._rows; i++ )
+						s += qr.at(k,i) * qr.at(j,i);
+					s = -s / qr.at(k,k);
+					for ( var i = k; i < this._rows; i++ )
+						q.set(j,i,q.at(j,i) + qr.at(k,i) * s);
+				}
+			}
+		}
+		
+		return {Q:q, R:r};
 	};
 	
 	/**
@@ -869,7 +1214,7 @@ var Spectrus = (function(){
 	/**
 	 * returns unweighted degree for some node
 	 */
-	SymMat.prototype.degree(n) {
+	SymMat.prototype.degree = function(n) {
 		var deg = 0;
 		for ( var i = 0; i < this._rows; i++ ) {
 			if ( i == n ) continue;
@@ -918,6 +1263,7 @@ var Spectrus = (function(){
 		// Public Number Operators
 		factorial: function(n) { return factorial(n); },
 		choose: function(n,k) { return choose(n,k); },
+		round: function(value, precision, mode) { return round(value, precision, mode); },
 		
 		// Unit Conversion Operators
 		degToRad: function(x) { return degToRad(x); },
@@ -941,6 +1287,7 @@ var Spectrus = (function(){
 		
 		// Public Matrix Constructors
 		Mat: function(type, rows, cols, mat) { return new Mat(type, rows, cols, mat); },
+		Eye: function(type, size) { var M = new Mat(type, size, size); M.toIdentity(); return M; },
 		Mat3d: function() { return new Mat('Float64Array', 3, 3); },
 		Mat3f: function() { return new Mat('Float32Array', 3, 3); },
 		Mat3i: function() { return new Mat('Int32Array', 3, 3); },
