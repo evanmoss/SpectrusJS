@@ -1264,6 +1264,7 @@ var Spectrus = (function(){
 		factorial: function(n) { return factorial(n); },
 		choose: function(n,k) { return choose(n,k); },
 		round: function(value, precision, mode) { return round(value, precision, mode); },
+		sign: function(x) { return sign(x); },
 		
 		// Unit Conversion Operators
 		degToRad: function(x) { return degToRad(x); },
