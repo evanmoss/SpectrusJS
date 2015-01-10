@@ -136,7 +136,7 @@ var Spectrus = (function(){
 				this._buffer = new window[this._type](vec._buffer);
 			}
 			
-			else if ( name === 'Array' ) {
+			else if ( name.substring(name.length - 5) === 'Array' ) {
 				this._type = type || DEFAULT_TYPE;
 				this._buffer = new window[this._type](vec);
 			}
@@ -155,8 +155,8 @@ var Spectrus = (function(){
 		return this._type;
 	};
 	
-	Vec.prototype.getCopy = function() {
-		return new Vec(null,null,this);
+	Vec.prototype.getCopy = function(type) {
+		return new Vec(type,null,this);
 	};
 	
 	/**
@@ -223,23 +223,23 @@ var Spectrus = (function(){
 	
 	/** Access */
 	Vec.prototype.x = function(a) {
-		if ( a ) this._buffer[0] = a;
+		if ( a != null ) this._buffer[0] = a;
 		else return this._buffer[0];
 	};
 	Vec.prototype.y = function(a) {
-		if ( a ) this._buffer[1] = a;
+		if ( a != null ) this._buffer[1] = a;
 		else return this._buffer[1];
 	};
 	Vec.prototype.z = function(a) {
-		if ( a ) this._buffer[2] = a;
+		if ( a != null ) this._buffer[2] = a;
 		else return this._buffer[2];
 	};
 	Vec.prototype.w = function(a) {
-		if ( a ) this._buffer[3] = a;
+		if ( a != null ) this._buffer[3] = a;
 		else return this._buffer[3];
 	};
 	Vec.prototype.set = function(i,a) {
-		if ( a ) this._buffer[i] = a;
+		this._buffer[i] = a;
 	};
 	Vec.prototype.at = function(i) {
 		return this._buffer[i];
@@ -286,6 +286,14 @@ var Spectrus = (function(){
 		var y = new Vec(this._type, this.size());
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			y.set(i, this.at(i) * x);
+		return y;
+	};
+	
+	/** Scalar Divide */
+	Vec.prototype.divide = function(x) {
+		var y = new Vec(this._type, this.size());
+		for ( var i = 0, len = this.size(); i < len; i++ )
+			y.set(i, this.at(i) / x);
 		return y;
 	};
 	
@@ -365,14 +373,22 @@ var Spectrus = (function(){
 		return a / this.size();
 	};
 	
-	/** Vector standard deviation */
-	Vec.prototype.std = function() {
+	/** Vector variance */
+	Vec.prototype.var = function(biased) {
 		var a = 0, mean = this.mean();
 		for ( var i = 0, len = this.size(); i < len; i++ ) {
 			var x = this.at(i) - mean;
 			a += x * x;
 		}
-		return Math.sqrt(a / this.size());
+		
+		var x = biased ? this.size() : this.size() - 1;
+		
+		return a / x;
+	};
+	
+	/** Vector standard deviation */
+	Vec.prototype.std = function() {
+		return Math.sqrt(this.var());
 	};
 	
 	/** UNFINISHED ###################################################################################################################
@@ -441,14 +457,17 @@ var Spectrus = (function(){
 	};
 	
 	/** Covariance */
-	Vec.prototype.cov = function(b) {
+	Vec.prototype.cov = function(b, biased) {
 		// return null on error
 		if ( this.size() != b.size() ) return null;
 		
 		var a = 0, a_mean = this.mean(), b_mean = b.mean();
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			a += (this.at(i) - a_mean) * (b.at(i) - b_mean);
-		return a / this.size();
+		
+		var x = biased ? this.size() : this.size() - 1;
+		
+		return a / x;
 	};
 	
 	/** Cosine Similarity or Cos(Theta) for vectors A & B */
@@ -556,6 +575,15 @@ var Spectrus = (function(){
 			this._buffer[i] = round(this._buffer[i], d, mode);
 	};
 	
+	/**
+	 * Creates a new cleaned up vector
+	 */
+	Vec.prototype.getClean = function(d, mode) {
+		var V = this.getCopy();
+		V.cleanup(d, mode);
+		return V;
+	};
+	
 	/** 
 	 * Some Math Functions
 	 */
@@ -627,7 +655,7 @@ var Spectrus = (function(){
 					this._type = type || mat._type;
 					this._buffer = mat.getCopy();
 				}
-				else if ( name === 'Array' ) {
+				else if ( name.substring(name.length - 5) === 'Array' ) {
 					this._type = type || DEFAULT_TYPE;
 					this._buffer = new Vec(this._type, null, mat);
 				}
@@ -651,8 +679,8 @@ var Spectrus = (function(){
 		return this._cols;
 	};
 	
-	Mat.prototype.getCopy = function() {
-		return new Mat(null, null, null, this);
+	Mat.prototype.getCopy = function(type) {
+		return new Mat(type, null, null, this);
 	};
 	
 	Mat.prototype.data = function() {
@@ -663,8 +691,8 @@ var Spectrus = (function(){
 		return this._type;
 	};
 	
-	/** Debug function prints mat to console (Row-major) **/
-	Mat.prototype.print_r = function() {
+	/** Debug function prints mat to console (Column-major) **/
+	Mat.prototype.print = function() {
 		for ( var i = 0; i < this._cols; i++ ) {
 			var str = "";
 			for ( var j = 0; j < this._rows; j++ ) {
@@ -675,8 +703,8 @@ var Spectrus = (function(){
 		}		
 	};
 	
-	/** Debug function prints mat to console (Column-major) **/
-	Mat.prototype.print = function() {
+	/** Debug function prints mat to console (Row-major) **/
+	Mat.prototype.print_r = function() {
 		for ( var i = 0; i < this._rows; i++ ) {
 			var str = "";
 			for ( var j = 0; j < this._cols; j++ ) {
@@ -689,20 +717,20 @@ var Spectrus = (function(){
 	
 	/** Access (Column-major) **/
 	Mat.prototype.at = function(i, j) {
-		return this._buffer.at(i * this._cols + j);
+		return this._buffer.at(i * this._rows + j);
 	};
 	/** Setter (Column-major) **/
 	Mat.prototype.set = function(i, j, a) {
-		this._buffer.set(i * this._cols + j, a);
+		this._buffer.set(i * this._rows + j, a);
 	};
 	
 	/** Access (Row-major) **/
 	Mat.prototype.at_r = function(i, j) {
-		return this._buffer.at(j * this._cols + i);
+		return this._buffer.at(j * this._rows + i);
 	};
 	/** Setter (Column-major) **/
 	Mat.prototype.set_r = function(i, j, a) {
-		this._buffer.set(j * this._cols + i, a);
+		this._buffer.set(j * this._rows + i, a);
 	};
 	
 	/**
@@ -754,6 +782,13 @@ var Spectrus = (function(){
 	};
 	
 	/**
+	 * Divide by a scalar
+	 */
+	Mat.prototype.divide = function(a) {
+		return new Mat(this._type, this._rows, this._cols, this._buffer.divide(a));
+	};
+	
+	/**
 	 * Add two matrices
 	 */
 	Mat.prototype.add = function(a) {
@@ -798,7 +833,7 @@ var Spectrus = (function(){
 	/**
 	 * Tensor quotient of two matrices
 	 */
-	Mat.prototype.tensorProduct = function(a) {
+	Mat.prototype.tensorQuotient = function(a) {
 		if ( this._rows != a._rows || this._cols != a._cols ) return;
 		var M = new Mat(this._type, this._rows, this._cols);
 		
@@ -827,18 +862,18 @@ var Spectrus = (function(){
 	};
 	
 	/**
-	 * Multiply two matrices
+	 * Multiply two matrices (tested)
 	 */
 	Mat.prototype.multiply = function(a) {
 		// check m for nxm * mxp
 		if ( this._rows != a._cols ) return;
-		var M = new Mat(this._type, this._cols, a._rows);
+		var M = new Mat(this._type, this._rows, a._cols);
 		
 		for ( var c = 0; c < M._cols; c++ )
 			for ( var r = 0; r < M._rows; r++ ) {
 				var AB = 0;
-				for ( var m = 0; m < this._rows; m++ )
-					AB += this.at(c, m) * a.at(m, r);
+				for ( var m = 0; m < this._cols; m++ )
+					AB += this.at(m, c) * a.at(r, m);
 				M.set(c, r, AB);
 			}
 		
@@ -878,10 +913,8 @@ var Spectrus = (function(){
 	 * returns the ith column
 	 */
 	Mat.prototype.getCol = function(i) {
-		var C = new Mat(this._type, this._rows, 1);
-		for ( var r = 0; r < this._rows; r++ )
-			C.set(0, r, this.at(i, r));
-		return C;
+		var idx = i * this._rows;
+		return new Mat(this._type, this._rows, 1, this._buffer._buffer.subarray(idx, idx + this._rows));
 	};
 	
 	/**
@@ -1041,6 +1074,15 @@ var Spectrus = (function(){
 	};
 	
 	/**
+	 * get a cleaned up copy
+	 */
+	Mat.prototype.getClean = function(d, mode) {
+		var M = this.getCopy();
+		M.cleanup(d, mode);
+		return M;
+	};
+	
+	/**
 	 * Returns whether or not a diagonal element is 0
 	 * use on r diagonal form qr decomposition to determine
 	 * if matrix is ful rank
@@ -1124,6 +1166,62 @@ var Spectrus = (function(){
 	};
 	
 	/**
+	 * Compute a covariance matrix
+	 * returns a SymMat with Float64 precision or type
+	 */
+	Mat.prototype.covMat = function(biased, type) {
+
+		if ( !type ) type = DEFAULT_TYPE;
+
+		var Q = new SymMat(type, this._cols);
+				
+		// memoize columns
+		var cols = [];
+		
+		for ( var i = 0; i < this._cols; i++ ) {
+			if ( !cols[i] ) cols[i] = this.getCol(i)._buffer;
+			Q.set(i, i, cols[i].var(biased));
+			for ( var j = i + 1; j < this._cols; j++ ) {
+				if ( !cols[j] ) cols[j] = this.getCol(j)._buffer;
+				Q.set(i, j, cols[i].cov(cols[j], biased));
+			}
+		}
+		
+		return Q;
+	};
+	
+	/**
+	 * Compute a correlation matrix
+	 * returns a SymMat with Float64 precision or type
+	 */
+	Mat.prototype.corMat = function(biased, type) {
+
+		if ( !type ) type = DEFAULT_TYPE;
+
+		var Q = new SymMat(type, this._cols);
+				
+		// memoize columns and their stds
+		var cols = [], stds = [];
+		
+		for ( var i = 0; i < this._cols; i++ ) {
+			if ( !cols[i] ) {
+				cols[i] = this.getCol(i)._buffer;
+				stds[i] = cols[i].std();
+			}
+			Q.set(i, i, 1);
+			for ( var j = i + 1; j < this._cols; j++ ) {
+				if ( !cols[j] ) {
+					cols[j] = this.getCol(j)._buffer;
+					stds[j] = cols[j].std();
+				}
+				Q.set(i, j, cols[i].cov(cols[j], biased) / (stds[i] * stds[j]));
+			}
+		}
+		
+		return Q;
+	};
+	
+	/**
 	 * Symmetric Matrix
 	 * @TODO eventually add support to initialize with data other than a SymMat
 	 */
@@ -1162,6 +1260,9 @@ var Spectrus = (function(){
 	 * Override at & set for SymMat
 	 * http://www.codeguru.com/cpp/cpp/algorithms/general/article.php/c11211/TIP-Half-Size-Triangular-Matrix.htm
 	 */
+	SymMat.prototype.getCopy = function(type) {
+		return new SymMat(type, null, this);
+	};
 	function getSymIndex(col,row,n) {
 		if ( row <= col )
 			return row * n - (row - 1) * ((row - 1) + 1) / 2 + col - row;
@@ -1182,6 +1283,28 @@ var Spectrus = (function(){
 	};
 	SymMat.prototype.transpose = function() {
 		return new SymMat(null, null, this);
+	};
+	SymMat.prototype.getCol = function(i) {
+		var C = new Mat(this._type, this._rows, 1);
+		for ( var c = 0; c < this._rows; c++ )
+			C.set(0, c, this.at(c, i));
+		return C;
+	};
+	
+	/**
+	 * get to a super Mat
+	 * O(n^2)
+	 */
+	SymMat.prototype.getMat = function(type) {
+		
+		if ( !type ) type = this._type;
+		
+		var M = new Mat(type, this._rows, this._rows);
+		for ( var i = 0; i < this._rows; i++ )
+			for ( var j = 0; j < this._rows; j++ )
+				M.set(i,j,this.at(i,j));
+		
+		return M;
 	};
 	
 	/**
