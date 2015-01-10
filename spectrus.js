@@ -539,6 +539,8 @@ var Spectrus = (function(){
 	 * Randomize elements to range [n,m]
 	 */
 	Vec.prototype.randomizeRange = function(n, m) {
+		if ( !n ) n = 0;
+		if ( !m ) m = 1;
 		var min = Math.min(n, m), d = Math.max(n, m) - min;
 		for ( var i = 0, len = this.size(); i < len; i++ )
 			this.set(i, Math.random() * d + min);
@@ -1394,7 +1396,7 @@ var Spectrus = (function(){
 		radToDeg: function(x) { return radToDeg(x); },
 		
 		// Public Vector Constructors
-		Vec: function(type, size, vec) { return new Vec(type, size, vec); },
+		Vec: function(size, type, vec) { return new Vec(type, size, vec); },
 		Vec3d: function() { return new Vec('Float64Array', 3); },
 		Vec3f: function() { return new Vec('Float32Array', 3); },
 		Vec3i: function() { return new Vec('Int32Array', 3); },
@@ -1403,6 +1405,7 @@ var Spectrus = (function(){
 		Vec4f: function() { return new Vec('Float32Array', 4); },
 		Vec4i: function() { return new Vec('Int32Array', 4); },
 		Vec4u: function() { return new Vec('Uint32Array', 4); },
+		RandVec: function(size, a, b, type) { var V = new Vec(type, size); V.randomizeRange(a, b); return V; },
 		
 		// Vector State Functions
 		pushVectorNorm: function(norm) { pushVectorNormState(state); },
@@ -1410,8 +1413,8 @@ var Spectrus = (function(){
 		currentVectorNorm: function() { return _vector_norm; },
 		
 		// Public Matrix Constructors
-		Mat: function(type, rows, cols, mat) { return new Mat(type, rows, cols, mat); },
-		Eye: function(type, size) { var M = new Mat(type, size, size); M.toIdentity(); return M; },
+		Mat: function(rows, cols, type, mat) { return new Mat(type, rows, cols, mat); },
+		Eye: function(size, type) { var M = new Mat(type, size, size); M.toIdentity(); return M; },
 		Mat3d: function() { return new Mat('Float64Array', 3, 3); },
 		Mat3f: function() { return new Mat('Float32Array', 3, 3); },
 		Mat3i: function() { return new Mat('Int32Array', 3, 3); },
@@ -1420,7 +1423,9 @@ var Spectrus = (function(){
 		Mat4f: function() { return new Mat('Float32Array', 4, 4); },
 		Mat4i: function() { return new Mat('Int32Array', 4, 4); },
 		Mat4u: function() { return new Mat('Uint32Array', 4, 4); },
+		RandMat: function(rows, cols, a, b, type) { var M = new Mat(type, rows, cols); M.randomizeRange(a, b); return M; },
 		
-		SymMat: function(type, size, copy) { return new SymMat(type, size, copy); }
+		SymMat: function(size, type, copy) { return new SymMat(type, size, copy); },
+		RandGraph: function(size, type) { if ( !type ) type = 'Int8Array'; var G = new SymMat(type, size); G.randomUnweightedGraph(); return G; }
 	}
 }());
