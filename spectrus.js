@@ -1175,7 +1175,7 @@ var Spectrus = (function(){
 
 		if ( !type ) type = DEFAULT_TYPE;
 
-		var Q = new SymMat(type, this._cols);
+		var Q = new CovMat(type, this._cols);
 				
 		// memoize columns
 		var cols = [];
@@ -1200,7 +1200,7 @@ var Spectrus = (function(){
 
 		if ( !type ) type = DEFAULT_TYPE;
 
-		var Q = new SymMat(type, this._cols);
+		var Q = new CovMat(type, this._cols, null, true);
 				
 		// memoize columns and their stds
 		var cols = [], stds = [];
@@ -1224,6 +1224,112 @@ var Spectrus = (function(){
 	};
 	
 	/**
+	 * Extract the diagonal matrix
+	 */
+	Mat.prototype.getDiag = function(type) {
+		if ( !type ) type = this._type;
+		
+		var M = new DiagMat(type, this._rows);
+		for ( var i = 0; i < this._rows; i++ )
+			M.set(i,i,this.at(i,i));
+			
+		return M;
+	};
+	
+	/**
+	 * Diagonal Matrix
+	 */
+	function DiagMat(type, size, data) {
+		// @TODO handle if data is passed!
+		if ( typeof data === "object" ) {
+			var name = data.constructor.name;
+						
+			// if arr is a Mat class, copy it
+			// @TODO fix for miniifcation
+			
+			if ( !type ) type = data._type;
+			
+			if ( name === 'SymMat' || name === 'CovMat' ) {
+				Mat.call(this,
+						type,
+						data._cols,
+						data._cols,
+						data._buffer.getCopy());
+			}
+			else if ( name === 'Mat' ) {
+				// @TODO fix copy's data (i.e., get first triangle)
+				
+			}
+			else if ( name === 'Vec' ) {
+			
+			}
+			// else if array...
+		}
+		else {
+			if ( !size ) size = DEFAULT_SIZE;
+			if ( !type ) type = DEFAULT_TYPE;
+			Mat.call(this,
+					type,
+					size,
+					size,
+					new Vec(type, size));
+		}
+	}
+	
+	// set DiagMat as subclass of Mat
+	DiagMat.prototype = Object.create(Mat.prototype);
+	DiagMat.prototype.constructor = DiagMat;
+	
+	/**
+	 * Override basic functionality
+	 */
+	DiagMat.prototype.at = function(i, j) {
+		if ( i != j ) return 0;
+		return this._buffer._buffer[i];
+	};
+	DiagMat.prototype.at_r = function(i, j) {
+		return this.at(i,j);
+	};
+	DiagMat.prototype.set = function(i, j, a) {
+		if ( i == j ) this._buffer._buffer[i] = a;
+	};
+	DiagMat.prototype.set_r = function(i, j, a) {
+		this.set(i,j,a);
+	};
+	DiagMat.prototype.getCol = function(i) {
+		var M = new Mat(this._type, 1, this._cols);
+		M.set(i,i,this.at(i,i));
+		return M;
+	};
+	DiagMat.prototype.getRow = function(i) {
+		var M = new Mat(this._type, this._rows, 1);
+		M.set(i,i,this.at(i,i));
+		return M;
+	};
+	
+	/**
+	 * get a Mat
+	 */
+	DiagMat.prototype.getMat = function() {
+		var M = new Mat(this._type, this._rows, this._cols);
+		for ( var i = 0; i < M._rows; i++ ) {
+			M.set(i,i,this.at(i,i));
+		}
+		return M;
+	};
+	
+	/**
+	 * get a SymMat
+	 */
+	DiagMat.prototype.getSymMat = function() {
+		var M = new SymMat(this._type, this._rows);
+		for ( var i = 0; i < M._rows; i++ ) {
+			M.set(i,i,this.at(i,i));
+		}
+		return M;
+	};
+	 
+	/**
 	 * Symmetric Matrix
 	 * @TODO eventually add support to initialize with data other than a SymMat
 	 */
@@ -1231,17 +1337,27 @@ var Spectrus = (function(){
 
 		if ( typeof copy === "object" ) {
 			var name = copy.constructor.name;
+						
 			// if arr is a Mat class, copy it
 			// @TODO fix for miniifcation
-			if ( name === 'SymMat' ) {
-				
-				if ( !type ) type = copy._type;
+			
+			if ( !type ) type = copy._type;
+			
+			if ( name === 'SymMat' || name === 'CovMat' ) {
 				Mat.call(this,
 						type,
 						copy._cols,
 						copy._cols,
 						copy._buffer.getCopy());
 			}
+			else if ( name === 'Mat' ) {
+				// @TODO fix copy's data (i.e., get first triangle)
+				
+			}
+			else if ( name === 'Vec' ) {
+			
+			}
+			// else if array...
 		}
 		else {
 			if ( !size ) size = DEFAULT_SIZE;
@@ -1384,6 +1500,120 @@ var Spectrus = (function(){
 		return c / this._rows;
 	};
 	
+	/**
+	 * Cov/Cor Matrix Helper Class
+	 * so you can easily switch between the two
+	 */
+	function CovMat(type, size, data, isCor) {	
+	
+		// set to covariance by default
+		this._isCor = !!isCor;
+			
+	 	if ( typeof data === "object" ) {
+			var name = data.constructor.name;
+			
+			if ( !type ) type = data._type;
+
+			// if data is a SymMat class, copy it
+			// @TODO fix for miniifcation
+			if ( name === 'SymMat' || name === 'Mat' ) {
+				SymMat.call(this,
+						type,
+						data._cols,
+						data._buffer.getCopy());
+			}
+			else if ( name === 'CovMat' ) {
+				
+				// override isCor
+				this._isCor = data._isCor;
+			
+				SymMat.call(this,
+						data.type,
+						data._rows,
+						data._buffer); // @TODO don't use copy right? because it's made anyway? fix above...
+			}
+		}
+		else {
+			if ( !size ) size = DEFAULT_SIZE;
+			if ( !type ) type = DEFAULT_TYPE;
+			
+			SymMat.call(this,
+					type,
+					size,
+					size,
+					new Vec(type, size + ((size * size - size)/2)));
+		}
+	}
+	 
+	// set CovMat as subclass of SymMat
+	CovMat.prototype = Object.create(SymMat.prototype);
+	CovMat.prototype.constructor = CovMat;
+	
+	// override getCopy
+	CovMat.prototype.getCopy = function(type) {
+		return new CovMat(type, null, this);
+	};
+	
+	// check if this is a covariance matrix
+	CovMat.prototype.isCov = function() {
+		return !this._isCor;
+	};
+	// check if this is a correlation matrix
+	CovMat.prototype.isCor = function() {
+		return this._isCor;
+	};
+	
+	/**
+	 * get a SymMat from a CovMat
+	 */
+	CovMat.prototype.getSymMat = function() {
+		return new SymMat(this._type, this._rows, this._rows, this._buffer);
+	};
+	
+	/**
+	 * get a correlation matrix from a covariance matrix
+	 */
+	CovMat.prototype.getCorMat = function() {
+		if ( this._isCor )
+			return this._getCopy();
+			
+		var M = new CovMat(this._type, this._rows, null, true);
+		for ( var i = 0; i < M._rows; i++ )
+			for ( var j = i; j < M._rows; j++ ) {
+				if ( i == j ) M.set(i,j,1);
+				else {
+					var stdp = Math.sqrt(this.at(i,i)) * Math.sqrt(this.at(j,j));
+					M.set(i, j, this.at(i,j) / stdp);
+				}
+			}
+			
+		return M;
+	};
+	
+	/**
+	 * get a covariance matrix from a correlation matrix
+	 * @TODO should we store the stds/variances in the class?
+	 */
+	CovMat.prototype.getCovMat = function(stds) {
+		
+		if ( !stds || stds.size() != this._rows ) return;
+	
+		if ( !this._isCor )
+			return this._getCopy();
+			
+		var M = new CovMat(this._type, this._rows, null, false);
+		for ( var i = 0; i < M._rows; i++ )
+			for ( var j = i; j < M._rows; j++ ) {
+				if ( i == j ) M.set(i,j,stds.at(i) * stds.at(i));
+				else {
+					var stdp = this.at(i,i) * this.at(j,j);
+					M.set(i, j, this.at(i,j) * stdp);
+				}
+			}
+			
+		return M;
+	};
+	
 	return {
 		// Public Number Operators
 		factorial: function(n) { return factorial(n); },
@@ -1423,6 +1653,7 @@ var Spectrus = (function(){
 		Mat4f: function() { return new Mat('Float32Array', 4, 4); },
 		Mat4i: function() { return new Mat('Int32Array', 4, 4); },
 		Mat4u: function() { return new Mat('Uint32Array', 4, 4); },
+		Diag: function(size, type, data) { return new DiagMat(type, size, data); },
 		RandMat: function(rows, cols, a, b, type) { var M = new Mat(type, rows, cols); M.randomizeRange(a, b); return M; },
 		
 		SymMat: function(size, type, copy) { return new SymMat(type, size, copy); },
