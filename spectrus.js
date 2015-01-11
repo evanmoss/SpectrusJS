@@ -1655,6 +1655,7 @@ var Spectrus = (function(){
 		Mat4u: function() { return new Mat('Uint32Array', 4, 4); },
 		Diag: function(size, type, data) { return new DiagMat(type, size, data); },
 		RandMat: function(rows, cols, a, b, type) { var M = new Mat(type, rows, cols); M.randomizeRange(a, b); return M; },
+		RandDiag: function(size, a, b, type) { var M = new DiagMat(type, size); M.randomizeRange(a, b); return M; },
 		
 		SymMat: function(size, type, copy) { return new SymMat(type, size, copy); },
 		RandGraph: function(size, type) { if ( !type ) type = 'Int8Array'; var G = new SymMat(type, size); G.randomUnweightedGraph(); return G; }
