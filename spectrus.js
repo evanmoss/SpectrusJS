@@ -1469,6 +1469,9 @@ var Spectrus = (function(){
 	 */
 	SymMat.prototype.clusterCoeff = function(n) {
 		var combos = choose(this.degree(n), 2), links = 0;
+		
+		if ( !combos ) return 0;
+		
 		for ( var i = 0; i < this._rows; i++ ) {
 			if ( i == n ) continue;
 			if ( this.at(n,i) != 0 ) links++;
