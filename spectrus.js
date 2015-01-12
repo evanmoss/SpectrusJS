@@ -1661,6 +1661,6 @@ var Spectrus = (function(){
 		RandDiag: function(size, a, b, type) { var M = new DiagMat(type, size); M.randomizeRange(a, b); return M; },
 		
 		SymMat: function(size, type, copy) { return new SymMat(type, size, copy); },
-		RandGraph: function(size, type) { if ( !type ) type = 'Int8Array'; var G = new SymMat(type, size); G.randomUnweightedGraph(); return G; }
+		RandGraph: function(size, p, type) { if ( !type ) type = 'Int8Array'; var G = new SymMat(type, size); G.randomUnweightedGraph(p); return G; }
 	}
 }());
