@@ -1641,7 +1641,7 @@ var Spectrus = (function(){
 		RandVec: function(size, a, b, type) { var V = new Vec(type, size); V.randomizeRange(a, b); return V; },
 		
 		// Vector State Functions
-		pushVectorNorm: function(norm) { pushVectorNormState(state); },
+		pushVectorNorm: function(norm) { pushVectorNormState(norm); },
 		popVectorNorm: function() { popVectorNormState(); },
 		currentVectorNorm: function() { return _vector_norm; },
 		
