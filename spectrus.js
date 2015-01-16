@@ -761,6 +761,47 @@ var Spectrus = (function(){
 		this._buffer.fill(a);
 	};
 	
+	/** Join columns **/
+	Mat.prototype.joinColumns(b) {
+		var M = new Mat(this._type, this._rows, this._cols + b._cols);
+		
+		if ( a._rows == b_rows ) {
+			for ( var col = 0; col < this._cols; col++ ) {
+				for ( var row = 0; row < this._rows; row++ ) {
+					M.set(col, row, this.at(col, row));
+				}
+			}
+			for ( var col = 0; col < b._cols; col++ ) {
+				for ( var row = 0; row < b._rows; b++ ) {
+					M.set(col + this._cols, row, b.at(col, row));
+				}
+			}
+		}
+		
+		return M;
+	};
+	
+	/** Join rows **/
+	Mat.prototype.joinRows(b) {
+		var M = new Mat(this._type, this._rows + b._rows, this._cols);
+		
+		if ( a._cols == b._cols ) {
+			for ( var row = 0; row < this._rows; row++ ) {
+				for ( var col = 0; col < this._cols; col++ ) {
+					M.set(col, row, this.at(col, row));
+				}
+			}
+			
+			for ( var row = 0; row < b._rows; row++ ) {
+				for ( var col = 0; col < b._cols; col++ ) {
+					M.set(col, row + this._rows, b.at(col, row));
+				}
+			}
+		}
+		
+		return M;
+	};
+	
 	/** 
 	 * Randomize elements to [0,1]
 	 * Obviously will result in all 0 for int matrices
