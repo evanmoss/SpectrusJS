@@ -762,17 +762,17 @@ var Spectrus = (function(){
 	};
 	
 	/** Join columns **/
-	Mat.prototype.joinColumns(b) {
+	Mat.prototype.joinCols = function(b) {
 		var M = new Mat(this._type, this._rows, this._cols + b._cols);
 		
-		if ( a._rows == b_rows ) {
+		if ( this._rows == b._rows ) {
 			for ( var col = 0; col < this._cols; col++ ) {
 				for ( var row = 0; row < this._rows; row++ ) {
 					M.set(col, row, this.at(col, row));
 				}
 			}
 			for ( var col = 0; col < b._cols; col++ ) {
-				for ( var row = 0; row < b._rows; b++ ) {
+				for ( var row = 0; row < b._rows; row++ ) {
 					M.set(col + this._cols, row, b.at(col, row));
 				}
 			}
@@ -782,10 +782,10 @@ var Spectrus = (function(){
 	};
 	
 	/** Join rows **/
-	Mat.prototype.joinRows(b) {
+	Mat.prototype.joinRows = function(b) {
 		var M = new Mat(this._type, this._rows + b._rows, this._cols);
 		
-		if ( a._cols == b._cols ) {
+		if ( this._cols == b._cols ) {
 			for ( var row = 0; row < this._rows; row++ ) {
 				for ( var col = 0; col < this._cols; col++ ) {
 					M.set(col, row, this.at(col, row));
@@ -800,6 +800,36 @@ var Spectrus = (function(){
 		}
 		
 		return M;
+	};
+	
+	/** Shuffle column col **/
+	Mat.prototype.shuffleCol = function(col) {
+		var m = this._rows, t, i;
+		while (m) {
+			 
+		    // Pick a remaining element
+		    i = Math.floor(Math.random() * m--);
+		 
+		    // And swap it with the current element.
+		    t = this.at(col, m);
+		    this.set(col, m, this.at(col, i));
+		    this.set(col, i, t);
+		}
+	};
+	
+	/** Shuffle row row **/
+	Mat.prototype.shuffleRow = function(row) {
+		var m = this._cols, t, i;
+		while (m) {
+			 
+		    // Pick a remaining element
+		    i = Math.floor(Math.random() * m--);
+		 
+		    // And swap it with the current element.
+		    t = this.at(m, row);
+		    this.set(m, row, this.at(i, row));
+		    this.set(i, row, t);
+		}
 	};
 	
 	/** 
