@@ -1005,6 +1005,57 @@ var Spectrus = (function(){
 		return R;
 	};
 	
+	/** 
+	 * returns a subset of rows from specified indices
+	 * @param arr is a nomral javascript array
+	 */
+	 Mat.prototype.getRows = function(arr) {
+		var M = new Mat(this._type, arr.length, this._cols);
+		
+		for ( var i = 0; i < arr.length; i++ ) {
+			var row = arr[i];
+			for ( var col = 0; col < this._cols; col++ ) {
+				M.set(col, i, this.at(col, row));
+			}
+		}
+		
+		return M;
+	 };
+	 
+	 /**
+	  * returns subset of first MIN(HEAD_SIZE, |rows|) rows
+	  */
+	  Mat.prototype.head = function() {
+	  	var 
+		HEAD_SIZE = Math.min(5, this._rows),
+		M = new Mat(this._type, HEAD_SIZE, this._cols);
+		
+		for ( var i = 0; i < HEAD_SIZE; i++ ) {
+			for ( var col = 0; col < this._cols; col++ ) {
+				M.set(col, i, this.at(col, i));
+			}
+		}
+		
+		return M;
+	  };
+	 
+	 /** 
+	 * returns a subset of columns from specified indices
+	 * @param arr is a nomral javascript array
+	 */
+	 Mat.prototype.getCols = function(arr) {
+		var M = new Mat(this._type, this._rows, arr.length);
+		
+		for ( var i = 0; i < arr.length; i++ ) {
+			var col = arr[i];
+			for ( var row = 0; row < this._rows; row++ ) {
+				M.set(i, row, this.at(col, row));
+			}
+		}
+		
+		return M;
+	 };
+	
 	/**
 	 * returns the trace of a square matrix
 	 * or 0 ( for faster compile)
