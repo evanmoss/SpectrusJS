@@ -835,8 +835,9 @@ var Spectrus = (function(){
 	 * Add two matrices
 	 */
 	Mat.prototype.add = function(a) {
-		if ( this._rows != a._rows || this._cols != a._cols ) return;
 		var M = new Mat(this._type, this._rows, this._cols);
+		
+		if ( this._rows != a._rows || this._cols != a._cols ) return M;
 		
 		for ( var i = 0; i < M._cols; i++ )
 			for ( var j = 0; j < M._rows; j++ )
@@ -849,8 +850,9 @@ var Spectrus = (function(){
 	 * Subtract two matrices
 	 */
 	Mat.prototype.subtract = function(a) {
-		if ( this._rows != a._rows || this._cols != a._cols ) return;
 		var M = new Mat(this._type, this._rows, this._cols);
+		
+		if ( this._rows != a._rows || this._cols != a._cols ) return M;
 		
 		for ( var i = 0; i < M._cols; i++ )
 			for ( var j = 0; j < M._rows; j++ )
@@ -863,8 +865,9 @@ var Spectrus = (function(){
 	 * Tensor product of two matrices
 	 */
 	Mat.prototype.tensorProduct = function(a) {
-		if ( this._rows != a._rows || this._cols != a._cols ) return;
 		var M = new Mat(this._type, this._rows, this._cols);
+		
+		if ( this._rows != a._rows || this._cols != a._cols ) return M;
 		
 		for ( var i = 0; i < M._cols; i++ )
 			for ( var j = 0; j < M._rows; j++ )
@@ -877,8 +880,9 @@ var Spectrus = (function(){
 	 * Tensor quotient of two matrices
 	 */
 	Mat.prototype.tensorQuotient = function(a) {
-		if ( this._rows != a._rows || this._cols != a._cols ) return;
 		var M = new Mat(this._type, this._rows, this._cols);
+		
+		if ( this._rows != a._rows || this._cols != a._cols ) return M;
 		
 		for ( var i = 0; i < M._cols; i++ )
 			for ( var j = 0; j < M._rows; j++ )
@@ -908,9 +912,10 @@ var Spectrus = (function(){
 	 * Multiply two matrices (tested)
 	 */
 	Mat.prototype.multiply = function(a) {
-		// check m for nxm * mxp
-		if ( this._rows != a._cols ) return;
 		var M = new Mat(this._type, this._rows, a._cols);
+		
+		// check m for nxm * mxp
+		if ( this._rows != a._cols ) return M;
 		
 		for ( var c = 0; c < M._cols; c++ )
 			for ( var r = 0; r < M._rows; r++ ) {
@@ -945,8 +950,8 @@ var Spectrus = (function(){
 	 * returns a new dxd identity matrix
 	 */
 	Mat.prototype.identity = function() {
-		if ( !this.isSquare() ) return;
 		var M = new Mat(this._type, this._rows, this.rows);
+		if ( !this.isSquare() ) return M;
 		for ( var i = 0; i < M._rows; i++ )
 			M.set(i,i,1);
 		return M;
@@ -1071,9 +1076,10 @@ var Spectrus = (function(){
 	 * Returns the cofactor matrix
 	 */
 	Mat.prototype.cofactorMatrix = function() {
-		if ( !this.isSquare() ) return;
-		
 		var M = new Mat(this._type, this._rows, this._cols);
+		
+		if ( !this.isSquare() ) return M;
+		
 		for ( var i = 0; i < this._cols; i++ )
 			for ( var j = 0; j < this._rows; j++ )
 				M.set(i, j, this.cofactor(i, j));
@@ -1102,7 +1108,8 @@ var Spectrus = (function(){
 	Mat.prototype.inverse = function() {
 		// instead of calculating the determinent twice...
 		var det = this.det();
-		if ( det == 0 ) return;
+		
+		if ( det == 0 ) return new Mat(this._type, this._rows, this._cols);
 
 		return this.adjugate().scale(1.0 / det);
 	};
@@ -1637,15 +1644,17 @@ var Spectrus = (function(){
 	/**
 	 * get a covariance matrix from a correlation matrix
 	 * @TODO should we store the stds/variances in the class?
+	 * if no stds are passed, returning an empty CovMat
 	 */
 	CovMat.prototype.getCovMat = function(stds) {
-		
-		if ( !stds || stds.size() != this._rows ) return;
 	
 		if ( !this._isCor )
 			return this._getCopy();
 			
 		var M = new CovMat(this._type, this._rows, null, false);
+		
+		if ( !stds || stds.size() != this._rows ) return M;
+		
 		for ( var i = 0; i < M._rows; i++ )
 			for ( var j = i; j < M._rows; j++ ) {
 				if ( i == j ) M.set(i,j,stds.at(i) * stds.at(i));
