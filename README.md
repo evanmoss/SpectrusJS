@@ -3,6 +3,6 @@ SpectrusJS
 
 A fast numerical library for JavaScript.  Typed vectors and matrices.  Particular spectral applications & multivariate statistics in mind.  Some state machine stuff sprinkled in.
 
-So far, vectors are implemented (needs better testing).  Construction is currently slower than a plain Array, but vector operations are much faster.  Next up are matrices, and then probably eigenvalues and eigenvectors, and PCA.
+Currently in progress; stuff like median, qr, eigenvectors, global cluster coeff, etc. aren't working yet.  Other bugs might be scattered around.  I've been developing this locally, and pushing here every so often in case anyone's interested!
 
-Debating whether or not to include an exhaustive interpolation module, or make that a separate project that runs ontop of this.
+Next up I'll work on eigen values, PCA, network metrics, etc.
