@@ -4,7 +4,7 @@
  * @Copyright: Copyright 2014-2015. All Rights Reserved. Something something fair use license.  Don't copy and redistribute without attribution.
  * @Git: https://github.com/evanmoss/spectrusjs
  */
-var Spectrus = (function(){
+module.exports = function() {
 	
 	/**
 	 * swap function
@@ -1794,4 +1794,4 @@ var Spectrus = (function(){
 		SymMat: function(size, type, copy) { return new SymMat(type, size, copy); },
 		RandGraph: function(size, p, type) { if ( !type ) type = 'Int8Array'; var G = new SymMat(type, size); G.randomUnweightedGraph(p); return G; }
 	}
-}());
+}();
