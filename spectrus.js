@@ -133,7 +133,7 @@ module.exports = function() {
 			// @TODO fix for miniifcation
 			if ( name === 'Vec' ) {
 				this._type = type || vec._buffer.constructor.name;
-				if ( !window )
+				if ( global )
 					this._buffer = new global[this._type](vec._buffer);
 				else
 					this._buffer = new window[this._type](vec._buffer);
@@ -141,7 +141,7 @@ module.exports = function() {
 			
 			else if ( name.substring(name.length - 5) === 'Array' ) {
 				this._type = type || DEFAULT_TYPE;
-				if ( !window )
+				if ( global )
 					this._buffer = new global[this._type](vec);
 				else
 					this._buffer = new window[this._type](vec);
@@ -149,7 +149,7 @@ module.exports = function() {
 		}
 		else {
 			this._type = type || DEFAULT_TYPE;
-			if ( !window )
+			if ( global )
 				this._buffer = new global[this._type](size || DEFAULT_SIZE);
 			else
 				this._buffer = new window[this._type](size || DEFAULT_SIZE);
@@ -177,7 +177,7 @@ module.exports = function() {
 	
 	// returns a copy of _buffer
 	Vec.prototype.data = function() {
-		if ( !window ) 
+		if ( global ) 
 			return new global[this._type](this._buffer);
 		return new window[this._type](this._buffer);
 	};
