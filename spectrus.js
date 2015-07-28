@@ -1238,6 +1238,35 @@ module.exports = function() {
 	};
 	
 	/**
+	 * Frobenius Norm
+	 */
+	function mat_frobenius_norm() {
+		var d = 0;
+		for ( var i = 0; i < this._cols; i++ ) {
+			for ( var j = 0; j < this._rows; j++ ) {
+				d += this.at(i,j) * this.at(i,j);
+			}
+		}
+		return Math.sqrt(d);
+	}
+	
+	/**
+	 * Frobenius Norm
+	 */
+	function mat_squared_frobenius_norm() {
+		var d = 0;
+		for ( var i = 0; i < this._cols; i++ ) {
+			for ( var j = 0; j < this._rows; j++ ) {
+				d += this.at(i,j) * this.at(i,j);
+			}
+		}
+		return d;
+	}
+	
+	/** Default Matrix Norm **/
+	Mat.prototype.norm = mat_frobenius_norm;
+	
+	/**
 	 * Computes the QR decomposition
 	 * returns {Q,R}
 	 * @TODO fix!
