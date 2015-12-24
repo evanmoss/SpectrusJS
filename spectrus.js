@@ -325,7 +325,7 @@ module.exports = function() {
 	};
 	
 	/** Vector sum */
-	Vec.prototype.sum = function(b) {
+	Vec.prototype.sumWith = function(b) {
 		// return null on error
 		if ( this.size() != b.size() ) return null;
 		
@@ -400,6 +400,13 @@ module.exports = function() {
 	/** Vector standard deviation */
 	Vec.prototype.std = function() {
 		return Math.sqrt(this.var());
+	};
+	
+	/** Log Transform */
+	Vec.prototype.logTransform = function() {
+		for ( var i = 0, len = this.size(); i < len; i++ ) {
+			this.set(i, Math.log(this.at(i)));
+		}	
 	};
 	
 	/** UNFINISHED ###################################################################################################################
