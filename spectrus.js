@@ -532,6 +532,30 @@ module.exports = function() {
 		}
 	};
 	
+	/**
+	 * Shuffles two vectors together
+	 */
+	Vec.prototype.shuffleWith = function(b) {
+		// map indices
+		var map = [], aSize = this.size(), bSize = b.size(), t, i, ielt, m = aSize + bSize;
+		for ( var i = 0, len = aSize; i < len; i++ ) map[i] = 'a';
+		for ( var i = aSize, len = aSize + b.size(); i < len; i++ ) map[i] = 'b';
+		
+		while (m) {
+			
+			// pick a remaining element
+			i = Math.floor(Math.random() * m-- );
+			ielt = map[i] == 'a' ? a.at(i) : b.at(i - aSize);
+			
+			// and swap it with the current element
+			t = map[m] == 'a' ? a.at(m) : b.at(m - aSize);
+			if ( map[m] == 'a' ) this.set(m, ielt);
+			else b.set(m - aSize, ielt);
+			if ( map[i] == 'a' ) this.set(i, t);
+			else b.set(i - aSize, t);
+		}
+	};
+	
 	/** Zero all elements */
 	Vec.prototype.reset = function() {
 		for ( var i = 0, len = this.size(); i < len; i++ )
