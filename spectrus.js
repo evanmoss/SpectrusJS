@@ -626,13 +626,6 @@ module.exports = function() {
 		return V;
 	};
 	
-	/**
-	 * Get a clone of the current Vec
-	 */
-	Vec.prototype.clone = function() {
-		return new Vec(undefined, undefined, this);	
-	};
-	
 	/** 
 	 * Some Math Functions
 	 */
