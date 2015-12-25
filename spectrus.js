@@ -537,21 +537,19 @@ module.exports = function() {
 	 */
 	Vec.prototype.shuffleWith = function(b) {
 		// map indices
-		var map = [], aSize = this.size(), bSize = b.size(), t, i, ielt, m = aSize + bSize;
-		for ( var i = 0, len = aSize; i < len; i++ ) map[i] = 'a';
-		for ( var i = aSize, len = aSize + b.size(); i < len; i++ ) map[i] = 'b';
+		var aSize = this.size(), bSize = b.size(), t, i, ielt, m = aSize + bSize;
 		
 		while (m) {
 			
 			// pick a remaining element
 			i = Math.floor(Math.random() * m-- );
-			ielt = map[i] == 'a' ? a.at(i) : b.at(i - aSize);
+			ielt = i < aSize ? a.at(i) : b.at(i - aSize);
 			
 			// and swap it with the current element
-			t = map[m] == 'a' ? a.at(m) : b.at(m - aSize);
-			if ( map[m] == 'a' ) this.set(m, ielt);
+			t = m < aSize ? a.at(m) : b.at(m - aSize);
+			if ( m < aSize ) this.set(m, ielt);
 			else b.set(m - aSize, ielt);
-			if ( map[i] == 'a' ) this.set(i, t);
+			if ( i < aSize ) this.set(i, t);
 			else b.set(i - aSize, t);
 		}
 	};
