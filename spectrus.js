@@ -640,7 +640,7 @@ module.exports = function() {
 	 * Samples (with replacement) this vector and returns a new one of size n
 	 */
 	Vec.prototype.resample = function(n) {
-		var v = new Vec(this.type(), n), idx = 0, m = this.size();
+		var v = new Vec(this.type(), n), m = this.size();
 		for ( var i = 0; i < n; i++ ) {
 			var j = Math.floor(Math.random() * m);
 			v.set(i, this.at(j));
