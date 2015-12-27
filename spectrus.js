@@ -671,7 +671,7 @@ module.exports = function() {
 	function choose(n, k) {
 		if ( k > n ) return 0;
 		if ( n < 0 ) return 0;
-		if ( typeof choose_map[n] === "undefined" ) choose_map[n] = [];
+		if ( !choose_map[n] ) choose_map[n] = [];
 		if ( choose_map[n][k] ) return choose_map[n][k];
 		return choose_map[n][k] = factorial(n) / (factorial(k) * factorial(n - k));
 	}
