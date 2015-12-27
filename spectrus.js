@@ -630,14 +630,9 @@ module.exports = function() {
 	 * Samples this vector and returns a new one of size n
 	 */
 	Vec.prototype.sample = function(n) {
-		var v = new Vec(this.type(), n), idx = 0;
-		while (n) {
-			// Pick a remaining element
-			i = Math.floor(Math.random() * n--);
-		 	
-		 	// And set the new vector
-		 	v.set(idx++, this.at(i));
-		}
+		var v = new Vec(this.type(), n), v2 = this.getCopy();
+		v2.shuffle();
+		for ( var i = 0; i < n; i++ ) v.set(i, v2.at(i));
 		return v;
 	};
 	
