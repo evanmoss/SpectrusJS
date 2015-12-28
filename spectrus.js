@@ -543,10 +543,10 @@ module.exports = function() {
 			
 			// pick a remaining element
 			i = Math.floor(Math.random() * m-- );
-			ielt = i < aSize ? a.at(i) : b.at(i - aSize);
+			ielt = i < aSize ? this.at(i) : b.at(i - aSize);
 			
 			// and swap it with the current element
-			t = m < aSize ? a.at(m) : b.at(m - aSize);
+			t = m < aSize ? this.at(m) : b.at(m - aSize);
 			if ( m < aSize ) this.set(m, ielt);
 			else b.set(m - aSize, ielt);
 			if ( i < aSize ) this.set(i, t);
