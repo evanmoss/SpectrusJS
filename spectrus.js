@@ -632,8 +632,7 @@ module.exports = function() {
 	Vec.prototype.sample = function(n) {
 		if ( n > this.size() ) n = this.size();
 		var v = new Vec(this.type(), n), v2 = this.getCopy();
-		v2.shuffle();
-		
+
 		// instead of shuffling the entire array
 		// let's just shuffle the n elements
 		var m = this.size(), a = m - n;
