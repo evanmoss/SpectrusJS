@@ -409,10 +409,8 @@ module.exports = function() {
 		}	
 	};
 	
-	/** 
-	 * Box-Cox Transform
-	 */
-	Vec.prototype.boxCox = function(theta) {
+	/** Box-Cox Transform */
+	Vec.prototype.boxCoxTransform = function(theta) {
 		for ( var i = 0, len = this.size(); i < len; i++ ) {
 			this.set(i, Math.asinh(this.at(i) * theta) / theta);
 		}	
