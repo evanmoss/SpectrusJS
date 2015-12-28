@@ -416,6 +416,13 @@ module.exports = function() {
 		}	
 	};
 	
+	/** Box-Cox Transform */
+	Vec.prototype.boxCoxTransform = function(lambda) {
+		for ( var i = 0, len = this.size(); i < len; i++ ) {
+			this.set(i, (Math.pow(this.at(i), lambda) - 1 )/ lambda);
+		}	
+	};
+	
 	/** UNFINISHED ###################################################################################################################
 	 * Vector Median using binmedian #################################################################################################
 	 * http://www.stat.cmu.edu/~ryantibs/papers/median.pdf ###########################################################################
