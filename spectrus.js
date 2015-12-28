@@ -647,7 +647,8 @@ module.exports = function() {
 			v2.set(i, t);
 		}
 		
-		for ( var i = this.size() - 1, len = this.size() - n; i >= len; i-- ) v.set(i, v2.at(i));
+		var idx = 0;
+		for ( var i = this.size() - 1, len = this.size() - n; i >= len; i-- ) v.set(idx++, v2.at(i));
 		return v;
 	};
 	
