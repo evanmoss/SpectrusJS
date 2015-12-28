@@ -630,9 +630,24 @@ module.exports = function() {
 	 * Samples this vector and returns a new one of size n
 	 */
 	Vec.prototype.sample = function(n) {
+		if ( n > this.size() ) n = this.size();
 		var v = new Vec(this.type(), n), v2 = this.getCopy();
 		v2.shuffle();
-		for ( var i = 0; i < n; i++ ) v.set(i, v2.at(i));
+		
+		// instead of shuffling the entire array
+		// let's just shuffle the n elements
+		var m = this.size(), a = m - n;
+		while ( m - a ) {
+			// Pick a remaining element
+			var i = Math.floor(Math.random() * m--);
+		 
+			// And swap it with the current element.
+			t = v2.at(m);
+			v2.set(m, v2.at(i));
+			v2.set(i, t);
+		}
+		
+		for ( var i = this.size() - 1, len = this.size() - n; i >= len; i-- ) v.set(i, v2.at(i));
 		return v;
 	};
 	
@@ -640,6 +655,7 @@ module.exports = function() {
 	 * Samples (with replacement) this vector and returns a new one of size n
 	 */
 	Vec.prototype.resample = function(n) {
+		if ( n > this.size() ) n = this.size();
 		var v = new Vec(this.type(), n), m = this.size();
 		for ( var i = 0; i < n; i++ ) {
 			var j = Math.floor(Math.random() * m);
