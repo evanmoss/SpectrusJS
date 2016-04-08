@@ -1031,7 +1031,7 @@ module.exports = function() {
 	};
 	
 	/**
-	 * Multiply two matrices (tested)
+	 * Multiply two matrices
 	 */
 	Mat.prototype.multiply = function(a) {
 		var M = new Mat(this._type, this._rows, a._cols);
@@ -1039,14 +1039,23 @@ module.exports = function() {
 		// check m for nxm * mxp
 		if ( this._rows != a._cols ) return M;
 		
-		for ( var c = 0; c < M._cols; c++ )
+		for ( var r = 0; r < this._cols; r++ ) {
+			for ( var c = 0; c < M._cols; c++ ) {
+				var x = 0;
+				for ( var i = 0; i < a._rows; i++ ) {
+					x += this.at_r(r, i) * a.at_r(i, c);
+				}
+				M.set_r(r, c, x);
+			}
+		}
+		/*for ( var c = 0; c < M._cols; c++ )
 			for ( var r = 0; r < M._rows; r++ ) {
 				var AB = 0;
 				for ( var m = 0; m < this._cols; m++ )
 					AB += this.at(m, c) * a.at(r, m);
 				M.set(c, r, AB);
 			}
-		
+		*/
 		return M;
 	};
 	
