@@ -5,15 +5,6 @@
  * @Git: https://github.com/evanmoss/spectrusjs
  */
 module.exports = function() {
-	
-	/**
-	 * swap function
-	 */
-	function swap(a, b) {
-		var tmp = a;
-		a = b;
-		b = tmp;
-	}
 
 	// returns -1 or 1 for sign of number or 0 for 0
 	function sign(x) {
