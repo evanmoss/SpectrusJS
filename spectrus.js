@@ -1169,7 +1169,7 @@ module.exports = function() {
 	 * or 0
 	 */
 	Mat.prototype.det = function() {
-		// check taht matrix is square
+		// check that matrix is square
 		if ( !this.isSquare() ) return 0;
 		
 		var det = 0, s;
